@@ -4,18 +4,73 @@ import subprocess # lancer mist en programme externe
 from pathlib import Path # manipuler les directory
 import tifffile # lecture fichiers tiff
 
+import os # module pour intéragir avec l'OS de l'ordi dont les fichiers/dossiers
+import tkinter as tk # module pour afficher des interfaces utilisateurs (GUI toolkit)
+from tkinter import filedialog # importe truc pour gérer fenetre direction
+from datetime import datetime  
+
 #----------------------------------------------------------------------------------------------------------
 
 ### PARAMETRES (Plus tard: possibilité de créer des profils selon l'échantillon)
-dossier_entree = Path("dossier entrant des tuiles") ### COMPLETER
-dossier_sortie = Path("dossier sortant de stitching mist") ### COMPLETER
+
 origine = "LR"                        # coin de départ de l'acquisition (lower right)
 numerotation = "HORIZONTALCOMBING"    # acquisition "snake" ligne par ligne
 chevauchement = 10                    # pourcentage de l'overlap d'acquisition
 
+#----------------------------------------------------------------------------------------------------------
+
+### RECUP CHEMINS DOSSIERS (phase test sans GUI complet)
+
+root = tk.Tk()
+root.withdraw()  # cache la fenêtre vide de tkinter, juste les fenetres de selection pr l'instant
+
+choix_entree = filedialog.askdirectory(title="Choisissez le dossier contenant les tuiles")
+choix_sortie = filedialog.askdirectory(title="Choisissez le dossier de sortie")
+root.destroy()   # ferme  tkinter
+
+# si pas de selection, arreter script
+if not choix_entree or not choix_sortie:
+    raise SystemExit("Sélection annulée.")
+
+dossier_entree = Path(choix_entree)
+dossier_parent_sortie = Path(choix_sortie)
+# création dossier sortant:
+dossier_sortie = dossier_parent_sortie / f"stitchingMIST_{datetime.now():%Y_%m_%d_%Hh%M}"
+
 # Dossier temporaire pour les tuiles nettoyées (supprimé à la fin)
 dossier_tif = dossier_sortie.parent / "tuiles_tif_temp"
 dossier_tif.mkdir(parents=True, exist_ok=True) # créer le dossier et évite erreur si déjà existant
+
+# Dossier temporaire pour les tuiles nettoyées (supprimé à la fin)
+dossier_tif = dossier_sortie.parent / "tuiles_tif_temp"
+dossier_tif.mkdir(parents=True, exist_ok=True) # créer le dossier et évite erreur si déjà existant
+
+
+# __________
+# (Pour plus tard GUI tkinter)
+# def emplacement_dossier_entrant(dossier_entree):
+#     chemin = filedialog.askdirectory(initialdir="/",title='Choisissez le dossier contenant les tuiles')
+
+#     if chemin: #askdirectory renvoie un string et un string vide renvoie False donc on fait juste test booléen
+#         # Mise à jour du chemin    
+#         dossier_entree = chemin #modifier la valeur interne du stringvar, car un "=" ecrase l'objet stringvar
+
+#         # # comptage des fichiers
+#         # try:
+#         #     fichiers = os.listdir(chemin)
+#         #     compteur = len([ f for f in fichiers if os.path.isfile(os.path.join(chemin, f))])
+#         #     affichage_compteur_var.set(compteur)
+#         # except Exception as e:
+#         #     print(f"Erreur: {e}")
+#         #     affichage_compteur_var.set(0)
+
+# # Fonction pour récup chemin dossier sortant
+# def emplacement_dossier_sortant(dossier_sortant_var):
+#     chemin = filedialog.askdirectory(initialdir="/",title='Choisissez un dossier sortant')
+#     if chemin:
+#         dossier_sortant_var = chemin
+# __________
+
 
 #----------------------------------------------------------------------------------------------------------
 
